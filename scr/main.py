@@ -2,7 +2,6 @@ import shutil as sh
 import os
 
 from utils import *
-
 from LoadToExcel import add_to_excel_file
 from GetManga import get_manga, get_int_input_in_range
 from tkinter import filedialog
