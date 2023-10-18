@@ -1,0 +1,13 @@
+Ändere den Pfad in der Datei 'Add Manga.bat' so um:
+
+@echo off
+py PFAD_ZU_DEM_ORDNER\scr\main.py
+
+Beispiel:
+@echo off
+py C:\Users\myname\Documents\AddManga\scr\main.py
+
+und du musst natürlich python installiert haben.
+
+In dem Ordner ist noch eine Excel Tabelle die eine Vorlage ist. Diese kannst du kopieren und hinverschieben wo du willst.
+Im Programm kannst du dann den Pfad zu dieser Datei einfügen.
