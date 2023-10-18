@@ -31,7 +31,7 @@ def path_is_valid(path):
     return True
 
 # Adding a manga to a list
-def adding(path):
+def adding_manga(path):
     print("Manga zu einer Liste hinzufügen.\n")
 
     if path == "":
@@ -47,13 +47,18 @@ def adding(path):
 
     manga_data = get_manga(manga_name)
 
+    # Manga coundn't be found
     if manga_data is None:
         print_color(f"\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/', wie man den Manga schreibt!)", bcolors.FAIL)
         input("Drücke 'Enter' um zurückzukehren...")
         clear()
         return
 
-    manga_count = input_int("\nWie viele hast du davon?: ")
+    manga_count = input_int("\nWie viele hast du davon?: ('0' um zurückzukehren)")
+
+    if manga_count == 0:
+        clear()
+        return
 
     add_to_excel_file(path, manga_data, manga_count)
 
@@ -89,10 +94,10 @@ while True:
     choice = get_int_input_in_range((1, 5))
 
     clear()
+
     # Adding Manga
     if choice == 1:
-        
-
+        adding_manga(path)
     if choice == 2:
         print("Path zur Liste ändern.")
         temp_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])

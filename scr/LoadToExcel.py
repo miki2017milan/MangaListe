@@ -2,36 +2,22 @@ import openpyxl as px
 import io
 import urllib3
 
+from scr.utils import *
 from openpyxl.drawing.image import Image
 from openpyxl.styles import *
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-print_color = lambda mes, color: print(color, mes, bcolors.ENDC)
 
 def add_to_excel_file(path, data, manga_have_count):
     # Loading the excel file and catching errors
     print(f"\nLoading '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
     try:
         wb = px.load_workbook(path)
-        print_color("Successfully loaded the file!\n", bcolors.OKGREEN)
+        print_color("Datai wurde erfolgreich geladen!\n", bcolors.OKGREEN)
     except FileNotFoundError:
-        print_color("File not found!\n", bcolors.FAIL)
+        print_color("Datei wurde nicht gefunden!\n", bcolors.FAIL)
         input("Drücke 'Enter' um zurückzukehren...")
         return False
 
     sheet = wb.active
-
-    count = manga_have_count
 
     # Starting from the next empty row beginning at row 4
     for i, row in enumerate(sheet['B']):
@@ -98,7 +84,7 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[count_cell].alignment = aline
     sheet[count_cell].fill = fill
     sheet[count_cell].border = border
-    sheet[count_cell] = int(count)
+    sheet[count_cell] = manga_have_count
 
     # Loading the german- and max count into the 'F' columne
     counts_cell = "F" + cur
@@ -124,7 +110,7 @@ def add_to_excel_file(path, data, manga_have_count):
 
     wb.save(path)
 
-    print_color(f"Successfully added the Manga '{data['name']}'!\n", bcolors.OKGREEN)
+    print_color(f"Der Manga '{data['name']}' wurde erfolgreich zur Liste hinzugefügt!\n", bcolors.OKGREEN)
     input("Drücke 'Enter' um zurückzukehren...")
 
     return True
