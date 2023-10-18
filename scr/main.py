@@ -1,45 +1,61 @@
 import shutil as sh
 
+from utils import *
+
 from LoadToExcel import add_to_excel_file
 from GetManga import get_manga, get_int_input_in_range
 from tkinter import filedialog
 from os import system
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
+# Checks if given path is valid
 def path_is_valid(path):
     try:
         file = open(path, "r")
         file.close()
+    # Checking if file exists
     except FileNotFoundError:
         if not path == "":
-            print(f"{bcolors.FAIL}Die Liste vom angegebenen path exestiert nicht!{bcolors.ENDC}")
+            print_color(f"Die Liste vom angegebenen path exestiert nicht! [{path}]", bcolors.FAIL)
         return False
     # except PermissionError:
     #     print(f"{bcolors.FAIL}Du musst die Excel-Datei geschlossen haben um das Programm zu benutzen!{bcolors.ENDC}")
     #     input("Drücke 'Enter' um das Programm zu beenden.")
     #     exit()
 
+    # Checking if it is an excel file
     if not path[-5:] == ".xlsx":
         if not path == "":
-            print(f"{bcolors.FAIL}Die Liste vom angegebenen path ist keine Excel-Datei!{bcolors.ENDC}")
+            print_color(f"Die Liste vom angegebenen path ist keine Excel-Datei! [{path}]", bcolors.FAIL)
         return False
     
     return True
 
-# init
-cls = lambda: system("cls & color 7")
+# Adding a manga to a list
+def adding(path):
+    print("Manga zu einer Liste hinzufügen.\n")
 
-cls()
+    if path == "":
+        print(f"{bcolors.FAIL}Du hast noch keine Liste ausgewählt!{bcolors.ENDC}")
+        input("Drücke 'Enter' um zurückzukehren...")
+        return
+
+    manga_name = input("Gib den Manga namen ein: ('0' um zurückzukehren)")
+
+    if manga_name == "0":
+        clear()
+        return
+
+    manga_data = get_manga(manga_name)
+
+    if manga_data is None:
+        print_color(f"\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/', wie man den Manga schreibt!)", bcolors.FAIL)
+        input("Drücke 'Enter' um zurückzukehren...")
+        clear()
+        return
+
+    manga_count = input_int("\nWie viele hast du davon?: ")
+
+    add_to_excel_file(path, manga_data, manga_count)
 
 # Loading path from file
 try:
@@ -48,10 +64,12 @@ try:
 
     if not path_is_valid(path):
         path = ""
+# Sets path to "" if it dosn't exist
 except FileNotFoundError:
     with open("path.txt", "w") as file:
         path = ""
 
+clear()
 while True:
     # Welcome Screen
     print("Willkommen bei der Manga Bibliothek!")
@@ -70,33 +88,10 @@ while True:
     # Choosing action
     choice = get_int_input_in_range((1, 5))
 
+    clear()
     # Adding Manga
-    cls()
     if choice == 1:
-        print("Manga zu einer Liste hinzufügen.\n")
-
-        if path == "":
-            print(f"{bcolors.FAIL}Du hast noch keine Liste ausgewählt!{bcolors.ENDC}")
-            input("Drücke 'Enter' um zurückzukehren...")
-            continue
-
-        manga_name = input("Gib den Manga namen ein: ('0' um zurückzukehren)")
-
-        if manga_name == "0":
-            cls()
-            continue
-
-        manga_data = get_manga(manga_name)
-
-        if manga_data is None:
-            print(f"{bcolors.FAIL}\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/' ob du den Manga dort findest!){bcolors.ENDC}")
-            input("Drücke 'Enter' um zurückzukehren...")
-            cls()
-            continue
-
-        manga_count = int(input("\nWie viele hast du davon?: "))
-
-        add_to_excel_file(path, manga_data, manga_count)
+        
 
     if choice == 2:
         print("Path zur Liste ändern.")
