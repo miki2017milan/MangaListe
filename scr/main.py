@@ -34,7 +34,7 @@ def adding_manga(path):
         input("Drücke 'Enter' um zurückzukehren...")
         return
 
-    manga_name = input("Gib den Manga namen ein: ('0' um zurückzukehren)")
+    manga_name = input("Gib den Manga namen ein ('0' um zurückzukehren): ")
 
     if manga_name == "0":
         clear()
@@ -49,7 +49,7 @@ def adding_manga(path):
         clear()
         return
 
-    manga_count = input_int("\nWie viele hast du davon?: ('0' um zurückzukehren)")
+    manga_count = input_int("\nWie viele hast du davon? ('0' um zurückzukehren): ")
 
     if manga_count == 0:
         clear()
@@ -113,7 +113,7 @@ while True:
     if choice == 3:
         clear()
         print("Neue liste erstellen.")
-        print("\nWie soll die Liste heißen? (Keine Sonderzeichen!)")
+        print("\nWie soll die Liste heißen? (Keine Sonderzeichen!): ")
         name = input("  > ")
         if not name == "":
             # Opening the file explorer for selecting a directory for the new list
