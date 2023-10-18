@@ -8,7 +8,7 @@ from openpyxl.styles import *
 
 def add_to_excel_file(path, data, manga_have_count):
     # Loading the excel file and catching errors
-    print(f"\nLoading '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
+    print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
     try:
         wb = px.load_workbook(path)
         print_color("Datai wurde erfolgreich geladen!\n", bcolors.OKGREEN)

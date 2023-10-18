@@ -1,3 +1,4 @@
+import openpyxl as px
 import shutil as sh
 import os
 
@@ -30,7 +31,7 @@ def adding_manga(path):
     print("Manga zu einer Liste hinzufügen.\n")
 
     if path == "":
-        print(f"{bcolors.FAIL}Du hast noch keine Liste ausgewählt!{bcolors.ENDC}")
+        print(f"Du hast noch keine Liste ausgewählt!", bcolors.FAIL)
         input("Drücke 'Enter' um zurückzukehren...")
         return
 
@@ -56,6 +57,35 @@ def adding_manga(path):
         return
 
     add_to_excel_file(path, manga_data, manga_count)
+
+def update_list(path):
+    name = path.split("/")[-1]
+
+    print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
+    try:
+        wb = px.load_workbook(path)
+        print_color("Datai wurde erfolgreich geladen!\n", bcolors.OKGREEN)
+    except FileNotFoundError:
+        print_color("Datei wurde nicht gefunden!\n", bcolors.FAIL)
+        input("Drücke 'Enter' um zurückzukehren...")
+        return False
+
+    sheet = wb.active
+
+    manga = []
+    for i, row in enumerate(sheet['B']):
+        if i < 4:
+            continue
+
+        if row.value is None:
+            cur = str(i + 1)
+            break
+        else:
+            manga.append(row.value)
+
+    print(manga)
+
+    input()
 
 # Loading path from file
 try:
@@ -83,10 +113,11 @@ while True:
 
     print(f"\n[3] Neue Liste erstellen.")
     print(f"\n[4] Liste öffnen.")
-    print(f"\n[5] Programm beenden.")
+    print(f"\n[5] Liste aktualisieren.")
+    print(f"\n[6] Programm beenden.")
 
     # Choosing action
-    choice = get_int_input_in_range((1, 5))
+    choice = get_int_input_in_range((1, 6))
 
     clear()
 
@@ -128,9 +159,14 @@ while True:
         print("Liste wird geöffnet...")
 
         os.system(path)
+
+    # Update list
+    if choice == 5:
+        update_list(path)
         
     # Closeing the program
-    if choice == 5:
+    if choice == 6:
         exit()
+
 
     clear()
