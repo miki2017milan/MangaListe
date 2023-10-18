@@ -1,11 +1,11 @@
 import shutil as sh
+import os
 
-from utils import *
+from scr.utils import *
 
 from LoadToExcel import add_to_excel_file
 from GetManga import get_manga, get_int_input_in_range
 from tkinter import filedialog
-from os import system
 
 # Checks if given path is valid
 def path_is_valid(path):
@@ -98,33 +98,44 @@ while True:
     # Adding Manga
     if choice == 1:
         adding_manga(path)
+    
+    # Changing the path to the list
     if choice == 2:
         print("Path zur Liste ändern.")
+
+        # Opening file explorer to select a list
         temp_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+
+        # If a file has been selected
         if not temp_path == "":
             path = temp_path
 
+            # Saving the new file path in the path.txt
             with open("path.txt", "w+") as file:
                 file.write(path)
 
-    # Closeing the Program
+    # Creating a new list
     if choice == 3:
-        cls()
+        clear()
         print("Neue liste erstellen.")
         print("\nWie soll die Liste heißen? (Keine Sonderzeichen!)")
         name = input("  > ")
         if not name == "":
+            # Opening the file explorer for selecting a directory for the new list
             temp_path = filedialog.askdirectory()
             if not temp_path == "":
+                # Copying and renameing the blank list to the selected directory
                 sh.copy2("Blank.xlsx", temp_path + "\\" + name + ".xlsx")
 
+    # Opeining the list
     if choice == 4:
-        cls()
+        clear()
         print("Liste wird geöffnet...")
 
-        system(path)
+        os.system(path)
         
+    # Closeing the program
     if choice == 5:
         exit()
 
-    cls()
+    clear()
