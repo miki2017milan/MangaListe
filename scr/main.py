@@ -1,11 +1,15 @@
 import openpyxl as px
 import shutil as sh
 import os
+import requests as r
 
 from utils import *
-from LoadToExcel import add_to_excel_file
-from GetManga import get_manga, get_int_input_in_range
+from GetManga import *
+
+from LoadToExcel import *
 from tkinter import filedialog
+
+prefix = ""
 
 # Checks if given path is valid
 def path_is_valid(path):
@@ -59,8 +63,6 @@ def adding_manga(path):
     add_to_excel_file(path, manga_data, manga_count)
 
 def update_list(path):
-    name = path.split("/")[-1]
-
     print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
     try:
         wb = px.load_workbook(path)
@@ -78,25 +80,48 @@ def update_list(path):
             continue
 
         if row.value is None:
-            cur = str(i + 1)
             break
         else:
-            manga.append(row.value)
+            manga.append((row.value, row.hyperlink.target))
 
-    print(manga)
+    new_manga_data = []
 
-    input()
+    for m in manga:
+        manga_page = r.get(m[1])
+        print(f"Lädt '{m[0]}'...")
+        new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page)))
+
+    # TODO make it a for loop
+    index = 0
+    while True:
+        counts_cell = "F" + str(index + 5)
+        if sheet[counts_cell].value is None:
+            break
+
+        sheet[counts_cell].font = count_font
+        sheet[counts_cell].alignment = aline
+        sheet[counts_cell].fill = fill
+        sheet[counts_cell].border = border
+        if new_manga_data[index][1] == new_manga_data[index][0]:
+            sheet[counts_cell] = new_manga_data[index][1]
+        else:
+            sheet[counts_cell] = str(new_manga_data[index][0]) + "/" + str(new_manga_data[index][1])
+
+        index += 1
+
+    wb.save(path)
+    input("Drücke 'Enter' um zurückzukehren...")
 
 # Loading path from file
 try:
-    with open("path.txt", "r") as file:
+    with open(prefix + "path.txt", "r") as file:
         path = file.readline()
 
     if not path_is_valid(path):
         path = ""
 # Sets path to "" if it dosn't exist
 except FileNotFoundError:
-    with open("path.txt", "w") as file:
+    with open(prefix + "path.txt", "w") as file:
         path = ""
 
 clear()
@@ -137,7 +162,7 @@ while True:
             path = temp_path
 
             # Saving the new file path in the path.txt
-            with open("path.txt", "w+") as file:
+            with open(prefix + "path.txt", "w+") as file:
                 file.write(path)
 
     # Creating a new list

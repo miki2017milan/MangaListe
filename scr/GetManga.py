@@ -70,7 +70,7 @@ def getting_manga_page(name):
     print_color(f"\nLädt '{result[1]}'!", bcolors.OKGREEN)
 
     manga_link = "https://www.mangaguide.de/" + result[0]
-    return r.get(manga_link)
+    return "https://www.mangaguide.de/" + result[0]
 
 def get_manga_title(manga_data):
     manga_title = manga_data.find("table").find_all("tr")[0].find("td").text
@@ -175,7 +175,9 @@ def get_manga_cover(manga_data):
 def get_manga(name):
     print(f"Lädt '{name}'...")
 
-    manga_page = getting_manga_page(name)
+    manga_link = getting_manga_page(name)
+
+    manga_page = r.get(manga_link)
     manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
     a_tags = manga_data.find_all("a")
 
@@ -200,7 +202,7 @@ def get_manga(name):
     # Cover
     cover = get_manga_cover(manga_data)
 
-    return {"name": manga_title, "author": author, "max_count": max_count, "german_count": german_count, "genre": genre, "cost": cost, "cover": cover}
+    return {"name": manga_title, "author": author, "max_count": max_count, "german_count": german_count, "genre": genre, "cost": cost, "cover": cover, "link": manga_link}
 
 if __name__ == "__main__":
     print(get_manga("sherlock"))
