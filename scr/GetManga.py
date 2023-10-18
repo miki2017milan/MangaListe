@@ -30,9 +30,7 @@ def choose_from_selection(selection):
 
     return selection[choise - 1]
 
-def get_manga(name):
-    print(f"Lädt '{name}'...")
-
+def getting_manga_page(name):
     # Finding the manga page from name
     search_name = name.replace(" ", "+")
 
@@ -72,60 +70,52 @@ def get_manga(name):
     print_color(f"\nLädt '{result[1]}'!", bcolors.OKGREEN)
 
     manga_link = "https://www.mangaguide.de/" + result[0]
-    manga_page = r.get(manga_link)
-    manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
+    return r.get(manga_link)
 
-    # Getting basic Information [Title, Author, Max_Count]
-    #title
-    tr_tags = manga_data.find("table").find_all("tr")
+def get_manga_title(manga_data):
+    manga_title = manga_data.find("table").find_all("tr")[0].find("td").text
+    printC(manga_title, "Es wurde erfolgreich der Manga Title geladen!", bcolors.OKGREEN)
 
-    # The title is always the first tr tag
-    manga_title = tr_tags[0].find("td").text
-    printC(result[1], "Es wurde erfolgreich der Manga Title geladen!", bcolors.OKGREEN)
+    return manga_title
 
-    # Author
+def get_manga_author(a_tags):
     # Searching for the a tag with the 'mangaka_id' in the 'href' to get the author
-    author = None
-    a_tags = manga_data.find_all("a")
     for a in a_tags:
         if a.has_attr('href'):
             if "mangaka_id=" in a['href']:
                 author = a.text
                 printC(author, "Es wurde erfolgreich der Manga Author geladen!", bcolors.OKGREEN)
-                break
+                return author
     
-    # Checking if the author has been found
-    if author == None:
-        printC("-", "Das Laden des Manga Authors ist fehlgeschlagen!", bcolors.FAIL)
-        author = "Error"
+    printC("-", "Das Laden des Manga Authors ist fehlgeschlagen!", bcolors.FAIL)
+    return "Error"
 
-    # Max count
+def get_manga_max_count(manga_page):
     try:
         # Getting the text where the maximal count of a Manga is stored
         max_count_text = manga_page.text.split("nglich erschien")[1]
         # Getting from the text the number
         max_count = int(re.findall(r'\d+', max_count_text)[0])
         printC(max_count, "Es wurde erfolgreich die maximale Manga Anzahl geladen!", bcolors.OKGREEN)
+
+        return max_count
     except:
         printC("-", "Das Laden der maximalen Manga Anzahl ist fehlgeschlagen!", bcolors.FAIL)
-        max_count = -1
+        return -1
 
-    # Genre
+def get_manga_genre(a_tags):
     # Searching for the a tag with the 'kategorie=' in the 'href' to get the genre
-    genre = None
     for a in a_tags:
         if a.has_attr('href'):
             if "kategorie=" in a['href']:
                 genre = a['href'].split("kategorie=")[1]
                 printC(genre, "Es wurde erfolgreich das Manga Genre geladen!", bcolors.OKGREEN)
-                break
+                return genre
+    
+    printC("-", "Das Laden des Manga Genre ist fehlgeschlagen!", bcolors.FAIL)
+    return "Error"
 
-    # Checking if the genre has been found
-    if genre == None:
-        printC("-", "Das Laden des Manga Genre ist fehlgeschlagen!", bcolors.FAIL)
-        genre = "Error"
-
-    # German count
+def get_manga_german_count(manga_page):
     try:
         # Getting the text where the german count is stored
         german_count_text = manga_page.text.split("auf Deutsch erschienen.")[0][-20:]
@@ -138,11 +128,12 @@ def get_manga(name):
             german_count = int(temp[0])
 
         printC(german_count, "Es wurde erfolgreich die Anzahl der deutschen Manga geladen!", bcolors.OKGREEN)
+        return german_count
     except:
         printC("-", "Das Laden der Anzahl der deutschen Manga ist fehlgeschlagen!", bcolors.FAIL)
-        german_count = -1
+        return -1
 
-    # Cost
+def get_manga_cost(manga_data):
     # Going throgh all of the volumes of the Manga to get a cost if the fist few dont have one given
     cost = -1
     for i in manga_data.find_all("td", {"class": "bandtext"}):
@@ -150,16 +141,16 @@ def get_manga(name):
             cost_text = i.text.split("Kaufpreis: ")[1]
             cost_nums = re.findall(r'\d+', cost_text)
             cost = int(cost_nums[0]) + (int(cost_nums[1]) / 100)
+
             printC(cost, "Es wurden erfolgreich die Manga kosten geladen!", bcolors.OKGREEN)
-            break
+            return cost
         except:
-            cost = -1
+            return -1
     
-    # If it dosnt find any price in all the volumes
-    if cost == -1:
-        printC("-", "Das Laden der Manga kosten ist fehlgeschlagen!", bcolors.FAIL)
-    
-    # Cover
+    printC("-", "Das Laden der Manga kosten ist fehlgeschlagen!", bcolors.FAIL)
+    return -1
+
+def get_manga_cover(manga_data):
     # Getting the cover-link beging with the 2nd char to not get the '.' at the beginning
     try:
         cover_link = manga_data.find("td", {"class": "cover"}).find("a")["href"][1:]
@@ -179,7 +170,37 @@ def get_manga(name):
                 printC("-", "Das Laden des Manga Covers ist fehlgeschlagen!", bcolors.FAIL)
                 cover = None
 
+    return cover
+
+def get_manga(name):
+    print(f"Lädt '{name}'...")
+
+    manga_page = getting_manga_page(name)
+    manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
+    a_tags = manga_data.find_all("a")
+
+    # Title
+    manga_title = get_manga_title(manga_data)
+
+    # Author
+    author = get_manga_author(a_tags)
+
+    # Max count
+    max_count = get_manga_max_count(manga_page)
+
+    # Genre
+    genre = get_manga_genre(a_tags)
+
+    # German count
+    german_count = get_manga_german_count(manga_page)
+
+    # Cost
+    cost = get_manga_cost(manga_data)
+    
+    # Cover
+    cover = get_manga_cover(manga_data)
+
     return {"name": manga_title, "author": author, "max_count": max_count, "german_count": german_count, "genre": genre, "cost": cost, "cover": cover}
 
 if __name__ == "__main__":
-    print(get_manga("bj alex"))
+    print(get_manga("sherlock"))
