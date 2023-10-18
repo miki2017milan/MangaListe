@@ -2,7 +2,7 @@ import openpyxl as px
 import io
 import urllib3
 
-from scr.utils import *
+from utils import *
 from openpyxl.drawing.image import Image
 from openpyxl.styles import *
 

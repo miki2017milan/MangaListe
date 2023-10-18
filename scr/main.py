@@ -1,7 +1,7 @@
 import shutil as sh
 import os
 
-from scr.utils import *
+from utils import *
 
 from LoadToExcel import add_to_excel_file
 from GetManga import get_manga, get_int_input_in_range
@@ -17,10 +17,6 @@ def path_is_valid(path):
         if not path == "":
             print_color(f"Die Liste vom angegebenen path exestiert nicht! [{path}]", bcolors.FAIL)
         return False
-    # except PermissionError:
-    #     print(f"{bcolors.FAIL}Du musst die Excel-Datei geschlossen haben um das Programm zu benutzen!{bcolors.ENDC}")
-    #     input("Drücke 'Enter' um das Programm zu beenden.")
-    #     exit()
 
     # Checking if it is an excel file
     if not path[-5:] == ".xlsx":
