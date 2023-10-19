@@ -35,7 +35,10 @@ def getting_manga_page(name):
     search_name = name.replace(" ", "+")
 
     search_link = "https://www.mangaguide.de/index.php?include=24&suche=" + search_name
-    search_page = r.get(search_link)
+    try:
+        search_page = r.get(search_link)
+    except r.exceptions.MissingSchema:
+        return None
 
     # Checking for multiple results
     search_results = BeautifulSoup(search_page.content, "html.parser").find(id="inhalt").find_all("a")
@@ -184,6 +187,9 @@ def get_manga(name):
     print(f"Lädt '{name}'...")
 
     manga_link = getting_manga_page(name)
+
+    if manga_link is None:
+        return None
 
     manga_page = r.get(manga_link)
     manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")

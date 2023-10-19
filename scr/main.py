@@ -92,11 +92,13 @@ def update_list(path):
 
     for m in manga:
         manga_page = r.get(m[1])
+        manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
         print(f"Lädt '{m[0]}'...")
-        new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page)))
+        new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page), get_finished(manga_data)))
 
     # Loading the new data into the excel file
     for i, n in enumerate(new_manga_data):
+        # German max / Count max
         counts_cell = "F" + str(i + 5)
         if sheet[counts_cell].value is None:
             break
@@ -109,6 +111,15 @@ def update_list(path):
             sheet[counts_cell] = n[1]
         else:
             sheet[counts_cell] = str(n[0]) + "/" + str(n[1])
+
+        # Finished status
+        finished_cell = "H" + str(i + 5)
+
+        sheet[finished_cell].font = finished_font 
+        sheet[finished_cell].alignment = aline
+        sheet[finished_cell].fill = fill
+        sheet[finished_cell].border = border
+        sheet[finished_cell] = "Nein" if n[2] else "Ja"
 
     wb.save(path)
     input("Drücke 'Enter' um zurückzukehren...")
@@ -185,6 +196,7 @@ while True:
         print("Liste wird geöffnet...")
 
         os.system(path)
+        input("...")
 
     # Update list
     if choice == 5:

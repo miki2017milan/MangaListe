@@ -4,6 +4,8 @@ import urllib3
 
 from utils import *
 from openpyxl.drawing.image import Image
+from openpyxl.cell.text import InlineFont 
+from openpyxl.cell.rich_text import TextBlock, CellRichText
 from openpyxl.styles import *
 
 # Styles
@@ -18,12 +20,14 @@ name_aline = Alignment(horizontal="left", vertical="center")
 genre_font = Font(name="Calibri", size=16, bold=True)
 
 count_font = Font(name="Calibri", size=20, bold=True)
+count_font_lauft = Font(name="Calibri", size=20, bold=True, color='FF0000')
+
+finished_font = Font(name="Calibri", size=22, bold=True)
 
 def add_to_excel_file(path, data, manga_have_count):
     # Loading the excel file and catching errors
     print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
     try:
-        print(path)
         wb = px.load_workbook(path)
         print_color("Datai wurde erfolgreich geladen!\n", bcolors.OKGREEN)
     except FileNotFoundError:
@@ -99,7 +103,7 @@ def add_to_excel_file(path, data, manga_have_count):
     # Loading the german- and max count into the 'F' columne
     counts_cell = "F" + cur
 
-    sheet[counts_cell].font = count_font
+    sheet[counts_cell].font = count_font_lauft if not data["finished"] else count_font
     sheet[counts_cell].alignment = aline
     sheet[counts_cell].fill = fill
     sheet[counts_cell].border = border
@@ -109,7 +113,7 @@ def add_to_excel_file(path, data, manga_have_count):
     else:
         sheet[counts_cell] = str(data["german_count"]) + "/" + str(data["max_count"])
 
-    # Loading the cost into the 'H' columne
+    # Loading the cost into the 'G' columne
     cost_cell = "G" + cur
 
     sheet[cost_cell].font = count_font
