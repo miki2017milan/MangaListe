@@ -54,6 +54,7 @@ def adding_manga(path):
         clear()
         return
 
+    # Getting how many manga the user has
     manga_count = input_int("\nWie viele hast du davon? ('0' um zurückzukehren): ")
 
     if manga_count == 0:
@@ -63,6 +64,7 @@ def adding_manga(path):
     add_to_excel_file(path, manga_data, manga_count)
 
 def update_list(path):
+    # Opening the list
     print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
     try:
         wb = px.load_workbook(path)
@@ -74,6 +76,7 @@ def update_list(path):
 
     sheet = wb.active
 
+    # Getting all the names and hyperlinks from the list
     manga = []
     for i, row in enumerate(sheet['B']):
         if i < 4:
@@ -84,6 +87,7 @@ def update_list(path):
         else:
             manga.append((row.value, row.hyperlink.target))
 
+    # Loading the new count of german manga and the max realeased amount
     new_manga_data = []
 
     for m in manga:
@@ -91,10 +95,9 @@ def update_list(path):
         print(f"Lädt '{m[0]}'...")
         new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page)))
 
-    # TODO make it a for loop
-    index = 0
-    while True:
-        counts_cell = "F" + str(index + 5)
+    # Loading the new data into the excel file
+    for i, n in enumerate(new_manga_data):
+        counts_cell = "F" + str(i + 5)
         if sheet[counts_cell].value is None:
             break
 
@@ -102,12 +105,10 @@ def update_list(path):
         sheet[counts_cell].alignment = aline
         sheet[counts_cell].fill = fill
         sheet[counts_cell].border = border
-        if new_manga_data[index][1] == new_manga_data[index][0]:
-            sheet[counts_cell] = new_manga_data[index][1]
+        if n[0] == n[1]:
+            sheet[counts_cell] = n[1]
         else:
-            sheet[counts_cell] = str(new_manga_data[index][0]) + "/" + str(new_manga_data[index][1])
-
-        index += 1
+            sheet[counts_cell] = str(n[0]) + "/" + str(n[1])
 
     wb.save(path)
     input("Drücke 'Enter' um zurückzukehren...")

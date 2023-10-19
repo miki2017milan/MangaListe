@@ -38,7 +38,6 @@ def add_to_excel_file(path, data, manga_have_count):
         if i < 4:
             continue
 
-        print(row.value)
         if row.value is None:
             cur = str(i + 1)
             break
@@ -104,6 +103,7 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[counts_cell].alignment = aline
     sheet[counts_cell].fill = fill
     sheet[counts_cell].border = border
+    sheet[counts_cell].number_format = "@"
     if data["max_count"] == data["german_count"]:
         sheet[counts_cell] = data["max_count"]
     else:

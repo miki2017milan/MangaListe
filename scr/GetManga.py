@@ -172,6 +172,14 @@ def get_manga_cover(manga_data):
 
     return cover
 
+def get_finished(manga_data):
+    try:
+        finished = False if manga_data.find("span")['class'][0] == "laeuft" else True
+        printC(finished, "Es wurden erfolgreich die Manga Abgeschlossenkheit geladen!", bcolors.OKGREEN)
+        return finished
+    except:
+        printC("-", "Das Laden der Manga Abgeschlossenkheit ist fehlgeschlagen!", bcolors.FAIL)
+
 def get_manga(name):
     print(f"Lädt '{name}'...")
 
@@ -181,28 +189,17 @@ def get_manga(name):
     manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
     a_tags = manga_data.find_all("a")
 
-    # Title
-    manga_title = get_manga_title(manga_data)
-
-    # Author
-    author = get_manga_author(a_tags)
-
-    # Max count
-    max_count = get_manga_max_count(manga_page)
-
-    # Genre
-    genre = get_manga_genre(a_tags)
-
-    # German count
-    german_count = get_manga_german_count(manga_page)
-
-    # Cost
-    cost = get_manga_cost(manga_data)
-    
-    # Cover
-    cover = get_manga_cover(manga_data)
-
-    return {"name": manga_title, "author": author, "max_count": max_count, "german_count": german_count, "genre": genre, "cost": cost, "cover": cover, "link": manga_link}
+    return {"name": get_manga_title(manga_data), 
+            "author": get_manga_author(a_tags), 
+            "max_count": get_manga_max_count(manga_page), 
+            "german_count": get_manga_german_count(manga_page), 
+            "genre": get_manga_genre(a_tags), 
+            "cost": get_manga_cost(manga_data), 
+            "cover": get_manga_cover(manga_data), 
+            "finished": get_finished(manga_data),
+            "link": manga_link}
 
 if __name__ == "__main__":
-    print(get_manga("sherlock"))
+    get_manga("bj alex")
+    get_manga("given")
+    get_manga("to your et")
