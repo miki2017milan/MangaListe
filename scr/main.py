@@ -1,7 +1,7 @@
 import openpyxl as px
+import requests as r
 import shutil as sh
 import os
-import requests as r
 
 from utils import *
 from GetManga import *
@@ -13,29 +13,21 @@ prefix = ""
 
 # Checks if given path is valid
 def path_is_valid(path):
-    try:
-        file = open(path, "r")
-        file.close()
-    # Checking if file exists
-    except FileNotFoundError:
-        if not path == "":
-            print_color(f"Die Liste vom angegebenen path exestiert nicht! [{path}]", bcolors.FAIL)
+    if not os.path.isfile(path):
+        print_color(f"Die Liste vom angegebenen path exestiert nicht! [{path}]", bcolors.FAIL)
         return False
 
     # Checking if it is an excel file
-    if not path[-5:] == ".xlsx":
-        if not path == "":
-            print_color(f"Die Liste vom angegebenen path ist keine Excel-Datei! [{path}]", bcolors.FAIL)
+    if not path.endswith(".xlsx"):
+        print_color(f"Die Liste vom angegebenen path ist keine Excel-Datei! [{path}]", bcolors.FAIL)
         return False
-    
+
     return True
 
 # Adding a manga to a list
 def adding_manga(path):
-    print("Manga zu einer Liste hinzufügen.\n")
-
     if path == "":
-        print(f"Du hast noch keine Liste ausgewählt!", bcolors.FAIL)
+        print("Du hast noch keine Liste ausgewählt!", bcolors.FAIL)
         input("Drücke 'Enter' um zurückzukehren...")
         return
 
@@ -61,6 +53,7 @@ def adding_manga(path):
         clear()
         return
 
+    # Adding the manga to the excel list
     add_to_excel_file(path, manga_data, manga_count)
 
 def update_list(path):
@@ -82,10 +75,10 @@ def update_list(path):
         if i < 4:
             continue
 
-        if row.value is None:
-            break
-        else:
+        if not row.value is None:
             manga.append((row.value, row.hyperlink.target))
+        else:
+            break
 
     # Loading the new count of german manga and the max realeased amount
     new_manga_data = []
@@ -93,6 +86,7 @@ def update_list(path):
     for m in manga:
         manga_page = r.get(m[1])
         manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
+        
         print(f"Lädt '{m[0]}'...")
         new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page), get_finished(manga_data)))
 
@@ -124,22 +118,24 @@ def update_list(path):
     wb.save(path)
     input("Drücke 'Enter' um zurückzukehren...")
 
+# Beginnig of the program
+clear()
+
 # Loading path from file
-try:
+if os.path.exists(prefix + "path.txt"):
     with open(prefix + "path.txt", "r") as file:
         path = file.readline()
 
     if not path_is_valid(path):
         path = ""
-# Sets path to "" if it dosn't exist
-except FileNotFoundError:
-    with open(prefix + "path.txt", "w") as file:
-        path = ""
+else:
+    with open(prefix + "path.txt", "w"): pass
 
-clear()
+    path = ""
+
 while True:
     # Welcome Screen
-    print("Willkommen bei der Manga Bibliothek!")
+    print("\nWillkommen bei der Manga Bibliothek!")
 
     print(f"\n[1] Manga zur Liste hinzufügen.")
 
@@ -160,6 +156,7 @@ while True:
 
     # Adding Manga
     if choice == 1:
+        print("Manga zu einer Liste hinzufügen.\n")
         adding_manga(path)
     
     # Changing the path to the list
