@@ -55,6 +55,7 @@ def adding_manga(path):
 
     # Adding the manga to the excel list
     add_to_excel_file(path, manga_data, manga_count)
+    input("Drücke 'Enter' um zurückzukehren...")
 
 def update_list(path):
     # Opening the list
@@ -86,7 +87,7 @@ def update_list(path):
     for m in manga:
         manga_page = r.get(m[1])
         manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
-        
+
         print(f"Lädt '{m[0]}'...")
         new_manga_data.append((get_manga_german_count(manga_page), get_manga_max_count(manga_page), get_finished(manga_data)))
 
@@ -118,6 +119,18 @@ def update_list(path):
     wb.save(path)
     input("Drücke 'Enter' um zurückzukehren...")
 
+def create_list():
+    print("\nWie soll die Liste heißen? : ")
+    name = input("  > ")
+    if not name == "":
+        # Opening the file explorer for selecting a directory for the new list
+        temp_path = filedialog.askdirectory()
+        if not temp_path == "":
+            # Copying and renameing the blank list to the selected directory
+            sh.copy2("Blank.xlsx", temp_path + "\\" + name + ".xlsx")
+
+    return temp_path + "\\" + name + ".xlsx"
+
 # Beginnig of the program
 clear()
 
@@ -147,10 +160,11 @@ while True:
     print(f"\n[3] Neue Liste erstellen.")
     print(f"\n[4] Liste öffnen.")
     print(f"\n[5] Liste aktualisieren.")
-    print(f"\n[6] Programm beenden.")
+    print(f"\n[6] Liste aus Vorlage erstellen.")
+    print(f"\n[7] Programm beenden.")
 
     # Choosing action
-    choice = get_int_input_in_range((1, 6))
+    choice = get_int_input_in_range((1, 7))
 
     clear()
 
@@ -178,14 +192,8 @@ while True:
     if choice == 3:
         clear()
         print("Neue liste erstellen.")
-        print("\nWie soll die Liste heißen? (Keine Sonderzeichen!): ")
-        name = input("  > ")
-        if not name == "":
-            # Opening the file explorer for selecting a directory for the new list
-            temp_path = filedialog.askdirectory()
-            if not temp_path == "":
-                # Copying and renameing the blank list to the selected directory
-                sh.copy2("Blank.xlsx", temp_path + "\\" + name + ".xlsx")
+
+        create_list()
 
     # Opeining the list
     if choice == 4:
@@ -193,14 +201,49 @@ while True:
         print("Liste wird geöffnet...")
 
         os.system(path)
-        input("...")
 
     # Update list
     if choice == 5:
         update_list(path)
+
+    if choice == 6:
+        preset_path = input("Gib den path zur Vorlage ein ('0' um zurückzukehren): ")
+
+        if preset_path == "0":
+            clear()
+            continue
+
+        if not os.path.exists(preset_path):
+            print_color(f"Vorlage wurde nicht gefunden! [{preset_path}]\n", bcolors.FAIL)
+            input("Drücke 'Enter' um zurückzukehren...")
+            clear()
+            continue
+
+        if not preset_path.endswith(".txt"):
+            print_color(f"Vorlage muss mit .txt enden! [{preset_path}]\n", bcolors.FAIL)
+            input("Drücke 'Enter' um zurückzukehren...")
+            clear()
+            continue
+
+        created_list_path = create_list()
+
+        # Read manga from list
+        manga = []
+        with open(preset_path, "r") as file:
+            manga = file.readlines()
+
+        # Remove new line char
+        for i in range(len(manga)):
+            manga[i] = manga[i].replace("\n", "")
+
+        for m in range(0, len(manga), 2):
+            add_to_excel_file(created_list_path, get_manga_by_link(manga[m]), int(manga[m + 1]))
+
+        print_color(f"Die Manga wurden erfolgreich zur Liste '{created_list_path}' hinzugefügt!\n", bcolors.OKGREEN)
+        input("Drücke 'Enter' um zurückzukehren...")
         
     # Closeing the program
-    if choice == 6:
+    if choice == 7:
         exit()
 
 

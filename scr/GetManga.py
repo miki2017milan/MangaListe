@@ -138,7 +138,6 @@ def get_manga_german_count(manga_page):
 
 def get_manga_cost(manga_data):
     # Going throgh all of the volumes of the Manga to get a cost if the fist few dont have one given
-    cost = -1
     for i in manga_data.find_all("td", {"class": "bandtext"}):
         try:
             cost_text = i.text.split("Kaufpreis: ")[1]
@@ -148,7 +147,7 @@ def get_manga_cost(manga_data):
             printC(cost, "Es wurden erfolgreich die Manga kosten geladen!", bcolors.OKGREEN)
             return cost
         except:
-            return -1
+            continue
     
     printC("-", "Das Laden der Manga kosten ist fehlgeschlagen!", bcolors.FAIL)
     return -1
@@ -191,6 +190,21 @@ def get_manga(name):
     if manga_link is None:
         return None
 
+    manga_page = r.get(manga_link)
+    manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
+    a_tags = manga_data.find_all("a")
+
+    return {"name": get_manga_title(manga_data), 
+            "author": get_manga_author(a_tags), 
+            "max_count": get_manga_max_count(manga_page), 
+            "german_count": get_manga_german_count(manga_page), 
+            "genre": get_manga_genre(a_tags), 
+            "cost": get_manga_cost(manga_data), 
+            "cover": get_manga_cover(manga_data), 
+            "finished": get_finished(manga_data),
+            "link": manga_link}
+
+def get_manga_by_link(manga_link):
     manga_page = r.get(manga_link)
     manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
     a_tags = manga_data.find_all("a")

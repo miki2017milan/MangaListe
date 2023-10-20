@@ -107,7 +107,7 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[counts_cell].alignment = aline
     sheet[counts_cell].fill = fill
     sheet[counts_cell].border = border
-    sheet[counts_cell].number_format = "@"
+    sheet[count_cell].number_format = "@"
     if data["max_count"] == data["german_count"]:
         sheet[counts_cell] = data["max_count"]
     else:
@@ -126,6 +126,5 @@ def add_to_excel_file(path, data, manga_have_count):
     wb.save(path)
 
     print_color(f"Der Manga '{data['name']}' wurde erfolgreich zur Liste hinzugefügt!\n", bcolors.OKGREEN)
-    input("Drücke 'Enter' um zurückzukehren...")
 
     return True
