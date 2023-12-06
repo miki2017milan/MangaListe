@@ -9,7 +9,7 @@ from GetManga import *
 from LoadToExcel import *
 from tkinter import filedialog
 
-prefix = ""
+prefix = "scr\\"
 
 # Checks if given path is valid
 def path_is_valid(path):
@@ -107,15 +107,6 @@ def update_list(path):
         else:
             sheet[counts_cell] = str(n[0]) + "/" + str(n[1])
 
-        # Finished status
-        finished_cell = "H" + str(i + 5)
-
-        sheet[finished_cell].font = finished_font 
-        sheet[finished_cell].alignment = aline
-        sheet[finished_cell].fill = fill
-        sheet[finished_cell].border = border
-        sheet[finished_cell] = "Nein" if n[2] else "Ja"
-
     wb.save(path)
     input("Drücke 'Enter' um zurückzukehren...")
 
@@ -193,7 +184,11 @@ while True:
         clear()
         print("Neue liste erstellen.")
 
-        create_list()
+        path = create_list()
+
+        # Saving the new file path in the path.txt
+        with open(prefix + "path.txt", "w+") as file:
+            file.write(path)
 
     # Opeining the list
     if choice == 4:
@@ -225,7 +220,11 @@ while True:
             clear()
             continue
 
-        created_list_path = create_list()
+        path = create_list()
+
+        # Saving the new file path in the path.txt
+        with open(prefix + "path.txt", "w+") as file:
+            file.write(path)
 
         # Read manga from list
         manga = []
@@ -237,9 +236,9 @@ while True:
             manga[i] = manga[i].replace("\n", "")
 
         for m in range(0, len(manga), 2):
-            add_to_excel_file(created_list_path, get_manga_by_link(manga[m]), int(manga[m + 1]))
+            add_to_excel_file(path, get_manga_by_link(manga[m]), int(manga[m + 1]))
 
-        print_color(f"Die Manga wurden erfolgreich zur Liste '{created_list_path}' hinzugefügt!\n", bcolors.OKGREEN)
+        print_color(f"Die Manga wurden erfolgreich zur Liste '{path}' hinzugefügt!\n", bcolors.OKGREEN)
         input("Drücke 'Enter' um zurückzukehren...")
         
     # Closeing the program
