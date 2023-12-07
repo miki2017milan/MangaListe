@@ -5,3 +5,4 @@ Add\ Manga.bat
 scr/__pycache__
 scr/TestingGui
 scr/.mypy_cache
+scr/.vscode
