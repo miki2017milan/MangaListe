@@ -9,7 +9,7 @@ from GetManga import *
 from LoadToExcel import *
 from tkinter import filedialog
 
-prefix = "scr\\"
+PREFIX = "scr\\"
 
 # Checks if given path is valid
 def path_is_valid(path):
@@ -40,7 +40,7 @@ def adding_manga(path):
     manga_data = get_manga(manga_name)
 
     # Manga coundn't be found
-    if manga_data is None:
+    if not manga_data:
         print_color(f"\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/', wie man den Manga schreibt!)", bcolors.FAIL)
         input("Drücke 'Enter' um zurückzukehren...")
         clear()
@@ -71,15 +71,15 @@ def update_list(path):
     sheet = wb.active
 
     # Getting all the names and hyperlinks from the list
-    manga = []
+    manga = [] # (name, link)
     for i, row in enumerate(sheet['B']):
         if i < 4:
             continue
 
-        if not row.value is None:
+        if row.value:
             manga.append((row.value, row.hyperlink.target))
-        else:
-            break
+            continue
+        break
 
     # Loading the new count of german manga and the max realeased amount
     new_manga_data = []
@@ -95,45 +95,57 @@ def update_list(path):
     for i, n in enumerate(new_manga_data):
         # German max / Count max
         counts_cell = "F" + str(i + 5)
-        if sheet[counts_cell].value is None:
-            break
 
-        sheet[counts_cell].font = count_font
+        sheet[counts_cell].font = count_font_lauft if not n[2] else count_font
         sheet[counts_cell].alignment = aline
         sheet[counts_cell].fill = fill
         sheet[counts_cell].border = border
+        sheet[counts_cell].number_format = "@"
+
         if n[0] == n[1]:
             sheet[counts_cell] = n[1]
         else:
             sheet[counts_cell] = str(n[0]) + "/" + str(n[1])
 
     wb.save(path)
+    print_color("\nDie Liste wurde erfolgreich aktualisiert!\n", bcolors.OKGREEN)
     input("Drücke 'Enter' um zurückzukehren...")
 
 def create_list():
-    print("\nWie soll die Liste heißen? : ")
-    name = input("  > ")
-    if not name == "":
-        # Opening the file explorer for selecting a directory for the new list
-        temp_path = filedialog.askdirectory()
-        if not temp_path == "":
-            # Copying and renameing the blank list to the selected directory
-            sh.copy2("Blank.xlsx", temp_path + "\\" + name + ".xlsx")
+    name = input("\nWie soll die Liste heißen? ('0' um zurückzukehren): ")
 
-    return temp_path + "\\" + name + ".xlsx"
+    if not name:
+        print_color(f"Gib einen validen Namen ein!\n", bcolors.FAIL)
+        input("Drücke 'Enter' um zurückzukehren...")
+        clear()
+        return
+
+    if name == "0":
+        clear()
+        return
+    
+    # Opening the file explorer for selecting a directory for the new list
+    temp_path = filedialog.askdirectory()
+
+    if temp_path:
+        # Copying and renameing the blank list to the selected directory
+        target = temp_path + "/" + name + ".xlsx"
+        sh.copy2(PREFIX + "Blank.xlsx", target)
+
+    return target
 
 # Beginnig of the program
 clear()
 
 # Loading path from file
-if os.path.exists(prefix + "path.txt"):
-    with open(prefix + "path.txt", "r") as file:
+if os.path.exists(PREFIX + "path.txt"):
+    with open(PREFIX + "path.txt", "r") as file:
         path = file.readline()
 
     if not path_is_valid(path):
         path = ""
 else:
-    with open(prefix + "path.txt", "w"): pass
+    with open(PREFIX + "path.txt", "w"): pass
 
     path = ""
 
@@ -176,19 +188,21 @@ while True:
             path = temp_path
 
             # Saving the new file path in the path.txt
-            with open(prefix + "path.txt", "w+") as file:
+            with open(PREFIX + "path.txt", "w+") as file:
                 file.write(path)
 
     # Creating a new list
     if choice == 3:
         clear()
-        print("Neue liste erstellen.")
+        print("Neue Liste erstellen.")
 
-        path = create_list()
+        temp_path = create_list()
 
-        # Saving the new file path in the path.txt
-        with open(prefix + "path.txt", "w+") as file:
-            file.write(path)
+        if temp_path:
+            path = temp_path
+            # Saving the new file path in the path.txt
+            with open(PREFIX + "path.txt", "w+") as file:
+                file.write(path)
 
     # Opeining the list
     if choice == 4:
@@ -202,9 +216,18 @@ while True:
         update_list(path)
 
     if choice == 6:
-        preset_path = input("Gib den path zur Vorlage ein ('0' um zurückzukehren): ")
+        print("Neue Liste aus einer Vorlage erstellen.")
+        print("\nWähle eine Vorlage als '.txt' Datei in diesem Format aus:\n-----------------------------------------------")
+        print_color("Name des Manga\nAnzahl der Manga die du von diesem Manga besitzt", bcolors.OKCYAN)
+        print("-----------------------------------------------")
+        print("Als Beispiel:\n-----------------------------------------------")
+        print_color("Naruto\n15\nTokyo Ghul\n5\nOne Punche Man\n31", bcolors.OKCYAN)
+        print("-----------------------------------------------")
+        input("Drücke 'Enter' um zurückzukehren...")
 
-        if preset_path == "0":
+        preset_path = filedialog.askopenfilename(filetypes=[("Textdatei", ".txt")])
+
+        if not preset_path:
             clear()
             continue
 
@@ -223,7 +246,7 @@ while True:
         path = create_list()
 
         # Saving the new file path in the path.txt
-        with open(prefix + "path.txt", "w+") as file:
+        with open(PREFIX + "path.txt", "w+") as file:
             file.write(path)
 
         # Read manga from list
@@ -236,7 +259,7 @@ while True:
             manga[i] = manga[i].replace("\n", "")
 
         for m in range(0, len(manga), 2):
-            add_to_excel_file(path, get_manga_by_link(manga[m]), int(manga[m + 1]))
+            add_to_excel_file(path, get_manga(manga[m]), int(manga[m + 1]))
 
         print_color(f"Die Manga wurden erfolgreich zur Liste '{path}' hinzugefügt!\n", bcolors.OKGREEN)
         input("Drücke 'Enter' um zurückzukehren...")

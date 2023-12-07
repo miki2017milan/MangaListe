@@ -1,0 +1,7 @@
+Add\ Manga.bat
+.mypy_cache
+.vscode
+
+scr/__pycache__
+scr/TestingGui
+scr/.mypy_cache
