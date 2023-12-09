@@ -1,6 +1,6 @@
-Add\ Manga.bat
 .mypy_cache
 .vscode
+.gitignore
 
 scr/__pycache__
 scr/TestingGui
