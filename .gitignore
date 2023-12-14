@@ -3,8 +3,5 @@
 .gitignore
 
 scr/__pycache__
-scr/TestingGui
 scr/.mypy_cache
 scr/.vscode
-
-hey
