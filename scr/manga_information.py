@@ -2,7 +2,7 @@ import traceback
 import requests as r
 import re
 
-from typing import Tuple
+from typing import Tuple, List
 from utils import *
 from bs4 import BeautifulSoup, ResultSet
 from openpyxl.styles import *
@@ -20,10 +20,7 @@ class Manga:
         self.link = link
 
     def __repr__(self) -> str:
-        return f"Manga: {self.name}"
-
-    def show(self) -> str:
-        print(f"""----------------------------------------------------------------
+        return f"""----------------------------------------------------------------
 Name: {self.name}
 Author: {self.author}
 Max_count: {self.max_count}
@@ -33,10 +30,10 @@ Cost: {self.cost}
 Cover: {self.cover}
 Finished: {self.finished}
 Link: {self.link}
-----------------------------------------------------------------""")
+----------------------------------------------------------------"""
 
 class Getting_manga_info:
-    def get_manga_from_search_name(self, search_name: str) -> Tuple[Manga]:
+    def get_manga_from_search_name(self, search_name: str) -> List[Manga]:
         manga_links = self.getting_manga_urls_from_search_name(search_name)
 
         if manga_links is None:
@@ -44,14 +41,14 @@ class Getting_manga_info:
         
         mangas = []
         for i, m in enumerate(manga_links):
-            manga_page = r.get(m)
-            manga_data = BeautifulSoup(manga_page.content, "html.parser").find(id="inhalt")
+            manga_page_content = r.get(m).content
+            manga_data = BeautifulSoup(manga_page_content, "html.parser").find(id="inhalt") # manga data is the whole content from the container <div> with the id "inhalt"
             a_tags = manga_data.find_all("a")
 
             manga = Manga(self.get_manga_title(manga_data),
                           self.get_manga_author(a_tags),
-                          self.get_manga_max_count(manga_page),
-                          self.get_manga_german_count(manga_page),
+                          self.get_manga_max_count(str(manga_page_content)),
+                          self.get_manga_german_count(str(manga_page_content)),
                           self.get_manga_genre(a_tags),
                           self.get_manga_cost(manga_data),
                           self.get_manga_cover(manga_data),
@@ -115,7 +112,7 @@ class Getting_manga_info:
     def get_manga_max_count(self, manga_page: r.Response) -> int:
         try:
             # Getting the text where the maximal count of a Manga is stored
-            max_count_text = manga_page.text.split("nglich erschien")[1]
+            max_count_text = manga_page.split("nglich erschien")[1][:20]
 
             # Getting the number from the text
             return int(re.findall(r'\d+', max_count_text)[0])
@@ -126,7 +123,7 @@ class Getting_manga_info:
     def get_manga_german_count(self, manga_page: r.Response) -> int:
         try:
             # Getting the text where the german count is stored
-            german_count_text = manga_page.text.split("auf Deutsch erschienen.")[0][-20:]
+            german_count_text = manga_page.split("auf Deutsch erschienen.")[0][-20:]
             # Getting from the text the numbers
             temp = re.findall(r'\d+', german_count_text)
 
@@ -156,7 +153,7 @@ class Getting_manga_info:
         return None
 
     def get_manga_cover(self, manga_data: BeautifulSoup) -> str:
-        # Getting the cover-link beging with the 2nd char to not get the '.' at the beginning
+        # Getting the cover-link beginning with the 2nd char to not get the '.' at the beginning
         try:
             cover_link = manga_data.find("td", {"class": "cover"}).find("a")["href"][1:]
             cover = "https://www.mangaguide.de" + cover_link
@@ -185,5 +182,5 @@ class Getting_manga_info:
 if __name__ == "__main__":
     test = Getting_manga_info()
     tests = test.get_manga_from_search_name("giv")
-    for t in tests:
-        t.show()
+    
+    print(tests)
