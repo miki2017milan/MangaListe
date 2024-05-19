@@ -4,7 +4,7 @@ import shutil as sh
 import os
 
 from utils import *
-from GetManga import *
+from manga_information import *
 
 from LoadToExcel import *
 from tkinter import filedialog
