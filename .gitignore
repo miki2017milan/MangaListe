@@ -1,7 +1,3 @@
-.mypy_cache
-.vscode
-.gitignore
-
-scr/__pycache__
-scr/.mypy_cache
-scr/.vscode
+**/__pycache__/
+**/.mypy_cache/
+**/.vscode/
