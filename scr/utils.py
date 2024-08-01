@@ -16,4 +16,4 @@ def get_int_input_in_range(maxmin):
             continue
         return choice
 
-clear = lambda: os.system("cls & color 7")
+clear = lambda: os.system("cls")

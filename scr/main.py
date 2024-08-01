@@ -14,6 +14,7 @@ from utils import input_int, get_int_input_in_range, clear
 
 class Main:
     def __init__(self):
+        self.LIST_PATH_FILE = ".list_path.txt"
         self.SCR_PATH = sys.path[0]
 
         self.menu = -1
@@ -92,13 +93,13 @@ class Main:
             return
 
         # Saving the new file path in the path.txt
-        with open(join(self.SCR_PATH, "path.txt"), "w+") as file:
+        with open(join(self.SCR_PATH, self.LIST_PATH_FILE), "w+") as file:
             file.write(path)
 
         self.list_path = path
     
     def load_path(self) -> str:
-        path_file = join(self.SCR_PATH, "path.txt")
+        path_file = join(self.SCR_PATH, self.LIST_PATH_FILE)
         path = ""
 
         if not isfile(path_file):
