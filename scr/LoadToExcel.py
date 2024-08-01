@@ -4,9 +4,9 @@ import urllib3
 
 from utils import *
 from openpyxl.drawing.image import Image
-from openpyxl.cell.text import InlineFont 
-from openpyxl.cell.rich_text import TextBlock, CellRichText
 from openpyxl.styles import PatternFill, Side, Border, Alignment, Font
+
+from GetMangaInfo import Manga
 
 # Styles
 fill = PatternFill("solid", fgColor="D9E1F2")
@@ -24,14 +24,14 @@ count_font_lauft = Font(name="Calibri", size=20, bold=True, color='FF0000')
 
 finished_font = Font(name="Calibri", size=22, bold=True)
 
-def add_to_excel_file(path, data, manga_have_count):
+def add_to_excel_file(path, manga: Manga, manga_have_count: int):
     # Loading the excel file and catching errors
-    print(f"\nLädt '{bcolors.OKBLUE}{path}{bcolors.ENDC}'...")
+    print(f"\nLädt '{path}'...")
     try:
         wb = px.load_workbook(path)
-        print_color("Datai wurde erfolgreich geladen!\n", bcolors.OKGREEN)
+        print("Datai 'path' wurde erfolgreich geladen!\n")
     except FileNotFoundError:
-        print_color("Datei wurde nicht gefunden!\n", bcolors.FAIL)
+        print("Datei wurde nicht gefunden!\n")
         input("Drücke 'Enter' um zurückzukehren...")
         return False
 
@@ -50,9 +50,9 @@ def add_to_excel_file(path, data, manga_have_count):
             cur = str(len(sheet['B']) + 1)
 
     # Loading the cover into the 'A' columne
-    if data["cover"] is not None:
+    if manga.cover:
         http = urllib3.PoolManager()
-        req = http.request('GET', data["cover"])
+        req = http.request('GET', manga.cover)
         image_file = io.BytesIO(req.data)
         img = Image(image_file)
 
@@ -70,8 +70,8 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[name_cell].alignment = name_aline
     sheet[name_cell].fill = fill
     sheet[name_cell].border = border
-    sheet[name_cell] = data["name"]
-    sheet[name_cell].hyperlink = data["link"]
+    sheet[name_cell] = manga.name
+    sheet[name_cell].hyperlink = manga.link
 
     # Loading the author into the 'C' columne
     author_cell = "C" + cur
@@ -80,7 +80,7 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[author_cell].alignment = aline
     sheet[author_cell].fill = fill
     sheet[author_cell].border = border
-    sheet[author_cell] = data["author"]
+    sheet[author_cell] = manga.author
 
     # Loading the genre into the 'D' columne
     genre_cell = "D" + cur
@@ -89,7 +89,7 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[genre_cell].alignment = aline
     sheet[genre_cell].fill = fill
     sheet[genre_cell].border = border
-    sheet[genre_cell] = data["genre"]
+    sheet[genre_cell] = manga.genre
 
     # Loading the have count into the 'E' columne
     count_cell = "E" + cur
@@ -103,15 +103,15 @@ def add_to_excel_file(path, data, manga_have_count):
     # Loading the german- and max count into the 'F' columne
     counts_cell = "F" + cur
 
-    sheet[counts_cell].font = count_font_lauft if not data["finished"] else count_font
+    sheet[counts_cell].font = count_font_lauft if not manga.finished else count_font
     sheet[counts_cell].alignment = aline
     sheet[counts_cell].fill = fill
     sheet[counts_cell].border = border
     sheet[counts_cell].number_format = "@"
-    if data["max_count"] == data["german_count"]:
-        sheet[counts_cell] = data["max_count"]
+    if manga.max_count == manga.german_count:
+        sheet[counts_cell] = manga.max_count
     else:
-        sheet[counts_cell] = str(data["german_count"]) + "/" + str(data["max_count"])
+        sheet[counts_cell] = str(manga.german_count) + "/" + str(manga.max_count)
 
     # Loading the cost into the 'G' columne
     cost_cell = "G" + cur
@@ -120,11 +120,11 @@ def add_to_excel_file(path, data, manga_have_count):
     sheet[cost_cell].alignment = aline
     sheet[cost_cell].fill = fill
     sheet[cost_cell].border = border
-    sheet[cost_cell] = data["cost"]
+    sheet[cost_cell] = manga.cost
     sheet[cost_cell].number_format = "0.00€"
 
     wb.save(path)
 
-    print_color(f"Der Manga '{data['name']}' wurde erfolgreich zur Liste hinzugefügt!\n", bcolors.OKGREEN)
+    print(f"Der Manga '{manga.name}' wurde erfolgreich zur Liste hinzugefügt!\n")
 
     return True

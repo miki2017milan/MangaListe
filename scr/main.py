@@ -1,61 +1,123 @@
 import openpyxl as px
 import requests as r
 import shutil as sh
+import sys
 import os
 
-from utils import *
-from manga_information import *
+from GetMangaInfo import GetMangaInfo
+from LoadToExcel import add_to_excel_file
 
-from LoadToExcel import *
+from os.path import join, isfile
 from tkinter import filedialog
 
-PREFIX = "scr\\"
+from utils import input_int, get_int_input_in_range, clear
 
-# Checks if given path is valid
-def path_is_valid(path):
-    if not os.path.isfile(path):
-        print_color(f"Die Liste vom angegebenen path exestiert nicht! [{path}]", bcolors.FAIL)
-        return False
+class Main:
+    def __init__(self):
+        self.SCR_PATH = sys.path[0]
 
-    # Checking if it is an excel file
-    if not path.endswith(".xlsx"):
-        print_color(f"Die Liste vom angegebenen path ist keine Excel-Datei! [{path}]", bcolors.FAIL)
-        return False
+        self.menu = -1
+        self.list_path = self.load_path()
 
-    return True
+    def run(self):
+        while True:
+            # Welcome Screen
+            print("\nWillkommen bei der Manga Bibliothek!")
 
-# Adding a manga to a list
-def adding_manga(path):
-    if path == "":
-        print("Du hast noch keine Liste ausgewählt!", bcolors.FAIL)
+            print(f"\n[1] Manga zur Liste hinzufügen.")
+            print(f"\n[2] Path zur Liste ändern.\n    Akutueller Path: [{self.list_path if self.list_path else "Noch keinen path angegeben."}]")
+            print(f"\n[3] Neue Liste erstellen.")
+            print(f"\n[4] Liste öffnen.")
+            print(f"\n[5] Liste aktualisieren.")
+            print(f"\n[6] Liste aus Vorlage erstellen.")
+            print(f"\n[7] Programm beenden.")
+
+            # Choosing action
+            choice = get_int_input_in_range((1, 7))
+
+            clear()
+
+            if choice == 1:
+                self.add_manga()
+            elif choice == 2:
+                self.change_path_to_list()
+
+    def add_manga(self):
+        if not self.list_path:
+            print("Du hast noch keine Liste ausgewählt!")
+            input("Drücke 'Enter' um zurückzukehren...")
+            return
+
+        print("Manga zur liste hinzufügen\n")
+
+        manga_name = input("Gib den Manga namen ein ('0' um zurückzukehren): ")
+
+        if manga_name == "0":
+            clear()
+            return
+
+        found_manga = GetMangaInfo.get_manga_from_search_name(manga_name)
+
+        # Manga coundn't be found
+        if not found_manga:
+            print(f"\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/', wie man den Manga schreibt oder ob es ihn gibt (auf deutch)!)")
+            input("Drücke 'Enter' um zurückzukehren...")
+            clear()
+            return
+
+        manga = found_manga[0]
+        if len(found_manga) > 1:
+            manga = self.select_manga(found_manga)
+
+        # Getting how many manga the user has
+        manga_count = input_int("\nWie viele hast du davon? ('0' um zurückzukehren): ")
+
+        if manga_count == 0:
+            clear()
+            return
+
+        # Adding the manga to the excel list
+        add_to_excel_file(self.list_path, manga, manga_count)
         input("Drücke 'Enter' um zurückzukehren...")
-        return
 
-    manga_name = input("Gib den Manga namen ein ('0' um zurückzukehren): ")
+    def change_path_to_list(self):
+        print("Path zur Liste ändern\n")
 
-    if manga_name == "0":
-        clear()
-        return
+        # Opening file explorer to select a list
+        path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
 
-    manga_data = get_manga(manga_name)
+        # If a file has been selected
+        if path == "":
+            clear()
+            return
 
-    # Manga coundn't be found
-    if not manga_data:
-        print_color(f"\nDie Suche brachte keine Ergebnisse. (Suche auf 'https://www.mangaguide.de/', wie man den Manga schreibt!)", bcolors.FAIL)
-        input("Drücke 'Enter' um zurückzukehren...")
-        clear()
-        return
+        # Saving the new file path in the path.txt
+        with open(join(self.SCR_PATH, "path.txt"), "w+") as file:
+            file.write(path)
 
-    # Getting how many manga the user has
-    manga_count = input_int("\nWie viele hast du davon? ('0' um zurückzukehren): ")
+        self.list_path = path
+    
+    def load_path(self) -> str:
+        path_file = join(self.SCR_PATH, "path.txt")
+        path = ""
 
-    if manga_count == 0:
-        clear()
-        return
+        if not isfile(path_file):
+            with open(path_file, "w"): pass
+            return ""
 
-    # Adding the manga to the excel list
-    add_to_excel_file(path, manga_data, manga_count)
-    input("Drücke 'Enter' um zurückzukehren...")
+        with open(path_file, "r") as file:
+            path = file.readline()
+
+        if not path.endswith(".xlsx") or not isfile(path):
+            with open(path_file, "w") as file: 
+                file.write("")
+            return ""
+        
+        return path
+    
+test = Main()
+test.run()
+exit()
 
 def update_list(path):
     # Opening the list
@@ -136,18 +198,6 @@ def create_list():
 
 # Beginnig of the program
 clear()
-
-# Loading path from file
-if os.path.exists(PREFIX + "path.txt"):
-    with open(PREFIX + "path.txt", "r") as file:
-        path = file.readline()
-
-    if not path_is_valid(path):
-        path = ""
-else:
-    with open(PREFIX + "path.txt", "w"): pass
-
-    path = ""
 
 while True:
     # Welcome Screen
